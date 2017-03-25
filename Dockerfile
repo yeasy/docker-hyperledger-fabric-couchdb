@@ -1,5 +1,9 @@
 # Dockerfile for Hyperledger fabric couchdb image.
 # This install the couchdb and add default cfg
+# db data can be mounted at volume `/opt/couchdb/data`
+# exposed ports of 5984 4369 9100
+
+# The container can use Fauxton as a UI.
 # Based on https://github.com/klaemo/docker-couchdb/blob/master/2.0.0/Dockerfile
 
 FROM debian:jessie
