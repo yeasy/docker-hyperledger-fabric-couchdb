@@ -31,6 +31,7 @@ RUN apt-get update -y && apt-get install -y --no-install-recommends \
     libicu-dev \
     libmozjs185-dev \
     make \
+    git \
   && rm -rf /var/lib/apt/lists/*
 
 # Grab su-exec and tini
