@@ -3,12 +3,10 @@
 # db data can be mounted at volume `/opt/couchdb/data`
 # exposed ports of 5984 4369 9100
 
+FROM debian:jessie
+#FROM hyperledger/fabric-baseimage:x86_64-0.3.0
 # The container can use Fauxton as a UI.
 # Based on https://github.com/klaemo/docker-couchdb/blob/master/2.0.0/Dockerfile
-
-FROM debian:jessie
-
-#FROM hyperledger/fabric-baseimage:x86_64-0.3.0
 
 # Add CouchDB user account
 RUN groupadd -r couchdb && useradd -d /opt/couchdb -g couchdb couchdb
@@ -66,20 +64,22 @@ RUN set -x \
  && rm -rf /var/lib/apt/lists/* /usr/lib/node_modules /usr/src/couchdb*
 
 # Add configuration
-COPY payload/local.ini /opt/couchdb/etc/local.d/
+COPY payload/local.ini /opt/couchdb/etc/
 COPY payload/vm.args /opt/couchdb/etc/
 COPY payload/docker-entrypoint.sh /
 
 # Setup directories and permissions
 RUN chmod +x /docker-entrypoint.sh \
- && mkdir /opt/couchdb/data /opt/couchdb/etc/default.d \
+ && mkdir /opt/couchdb/data /opt/couchdb/etc/default.d /opt/couchdb/etc/local.d \
  && chown -R couchdb:couchdb /opt/couchdb/
 
 WORKDIR /opt/couchdb
 EXPOSE 5984 4369 9100
+
+USER couchdb
+
 VOLUME ["/opt/couchdb/data"]
 
 ENTRYPOINT ["tini", "--", "/docker-entrypoint.sh"]
 CMD ["/opt/couchdb/bin/couchdb"]
-LABEL org.hyperledger.fabric.version=1.0.0-preview \
-      org.hyperledger.fabric.base.version=0.3.0
+
