@@ -4,7 +4,8 @@ Docker images for [Hyperledger](https://www.hyperledger.org) Fabric base image.
 
 # Supported tags and respective Dockerfile links
 
-* [`latest` (latest/Dockerfile)](https://github.com/yeasy/docker-hyperledger-fabric-couchdb/blob/master/Dockerfile): Default to track latest code.
+* [`latest` (Dockerfile)](https://github.com/yeasy/docker-hyperledger-fabric-couchdb/blob/master/Dockerfile): Defaults to CouchDB `3.4.2`, aligned with `fabric-samples` `test-network`.
+* Custom build arg: `--build-arg COUCHDB_VERSION=<version>` for other CouchDB 3.x lines.
 
 For more information about this image and its history, please see the relevant manifest file in the [`yeasy/docker-hyperledger-fabric-couchdb` GitHub repo](https://github.com/yeasy/docker-hyperledger-fabric-couchdb).
 
@@ -21,15 +22,17 @@ The docker image is auto built at [https://registry.hub.docker.com/u/yeasy/hyper
 FROM yeasy/hyperledger-fabric-couchdb:latest
 ```
 
+## Build with a specific CouchDB version
+```sh
+docker build --build-arg COUCHDB_VERSION=3.5.1 -t yeasy/hyperledger-fabric-couchdb:3.5.1 .
+```
+
 # Which image is based on?
-The image is built based on [debian](https://hub.docker.com/_/debian) jessie image.
+The image is built on top of the official [CouchDB](https://hub.docker.com/_/couchdb) image.
 
 # What has been changed?
-## install dependencies
-Install required  lib
-
-## install couchdb
-Install required  couchdb 2.0.
+## install CouchDB
+Use the official CouchDB container line, defaulting to `3.4.2` for Hyperledger Fabric compatibility.
 
 # Supported Docker versions
 

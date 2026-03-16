@@ -1,79 +1,23 @@
-# Dockerfile for Hyperledger fabric couchdb image.
-# This install the couchdb and add default cfg
-# db data can be mounted at volume `/opt/couchdb/data`
-# exposed ports of 5984 4369 9100
+# Dockerfile for Hyperledger Fabric CouchDB image.
+# This image follows the Fabric sample-network default CouchDB line.
+#
+# Latest CouchDB upstream release is currently 3.5.1, while Fabric samples
+# pin 3.4.2 for tested network composition. Keep a build arg for overrides.
 
-FROM debian:jessie
-#FROM hyperledger/fabric-baseimage:x86_64-0.3.0
-# The container can use Fauxton as a UI.
-# Based on https://github.com/klaemo/docker-couchdb/blob/master/2.0.0/Dockerfile
+ARG COUCHDB_VERSION=3.4.2
+FROM couchdb:${COUCHDB_VERSION}
 
-# Add CouchDB user account
-RUN groupadd -r couchdb && useradd -d /opt/couchdb -g couchdb couchdb
+LABEL maintainer="yeasy@github"
 
-RUN apt-get update -y && apt-get install -y --no-install-recommends \
-    ca-certificates \
-    curl \
-    erlang-nox \
-    erlang-reltool \
-    haproxy \
-    libicu5. \
-    libmozjs185-1.0 \
-    openssl \
-    cmake \
-    apt-transport-https \
-    gcc \
-    g++ \
-    erlang-dev \
-    libcurl4-openssl-dev \
-    libicu-dev \
-    libmozjs185-dev \
-    make \
-    git \
-    npm \
-  && rm -rf /var/lib/apt/lists/*
+USER root
 
-# Grab su-exec and tini
-RUN set -x \
-    && git clone https://github.com/ncopa/su-exec /tmp/su-exec/ \
-    && cd /tmp/su-exec \
-    && make all \
-    && cp su-exec /usr/bin/ \
-    && git clone https://github.com/krallin/tini/ /tmp/tini/ \
-    && cd /tmp/tini/ \
-    && git checkout v0.14.0 \
-    && cmake . && make \
-    && cp tini tini-static /usr/local/bin/ \
-    # Clean up su-exec and tini
-    && rm -rf /tmp/tini \
-    && rm -rf /tmp/su-exec 
+# Add Fabric-oriented configuration.
+COPY payload/local.ini /opt/couchdb/etc/local.d/10-hyperledger-fabric.ini
+COPY payload/vm.args /opt/couchdb/etc/vm.args
+COPY payload/docker-entrypoint.sh /usr/local/bin/hyperledger-fabric-couchdb-entrypoint.sh
 
-ARG COUCHDB_VERSION=2.0.0
-
-# Download dev dependencies
-RUN set -x \
- && npm install -g grunt-cli \
- # Acquire CouchDB source code
- && cd /usr/src && mkdir couchdb \
- && curl -fSL https://dist.apache.org/repos/dist/release/couchdb/source/$COUCHDB_VERSION/apache-couchdb-$COUCHDB_VERSION.tar.gz -o couchdb.tar.gz \
- && tar -xzf couchdb.tar.gz -C couchdb --strip-components=1 \
- && cd couchdb \
- # Build the release and install into /opt
- && ./configure --disable-docs \
- && make release \
- && mv /usr/src/couchdb/rel/couchdb /opt/ \
- # Cleanup build detritus
- && rm -rf /var/lib/apt/lists/* /usr/lib/node_modules /usr/src/couchdb*
-
-# Add configuration
-COPY payload/local.ini /opt/couchdb/etc/
-COPY payload/vm.args /opt/couchdb/etc/
-COPY payload/docker-entrypoint.sh /
-
-# Setup directories and permissions
-RUN chmod +x /docker-entrypoint.sh \
- && mkdir /opt/couchdb/data /opt/couchdb/etc/default.d /opt/couchdb/etc/local.d \
- && chown -R couchdb:couchdb /opt/couchdb/
+RUN chmod +x /usr/local/bin/hyperledger-fabric-couchdb-entrypoint.sh \
+ && chown -R couchdb:couchdb /opt/couchdb /usr/local/bin/hyperledger-fabric-couchdb-entrypoint.sh
 
 WORKDIR /opt/couchdb
 EXPOSE 5984 4369 9100
@@ -82,6 +26,5 @@ USER couchdb
 
 VOLUME ["/opt/couchdb/data"]
 
-ENTRYPOINT ["tini", "--", "/docker-entrypoint.sh"]
-CMD ["/opt/couchdb/bin/couchdb"]
-
+ENTRYPOINT ["/usr/local/bin/hyperledger-fabric-couchdb-entrypoint.sh"]
+CMD ["couchdb"]

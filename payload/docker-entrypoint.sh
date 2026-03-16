@@ -13,7 +13,7 @@
 
 set -e
 
-if [ "$1" = '/opt/couchdb/bin/couchdb' ]; then
+if [ "$1" = '/opt/couchdb/bin/couchdb' ] || [ "$1" = 'couchdb' ]; then
 
 	if [ ! -z "$NODENAME" ] && ! grep "couchdb@" /opt/couchdb/etc/vm.args; then
 		echo "-name couchdb@$NODENAME" >> /opt/couchdb/etc/vm.args
